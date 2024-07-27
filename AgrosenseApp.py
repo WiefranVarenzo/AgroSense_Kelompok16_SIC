@@ -12,6 +12,36 @@ import os
 if 'page' not in st.session_state:
     st.session_state['page'] = 'landing'
 
+# Function to include the CSS file
+def include_css(file_name):
+    if os.path.exists(file_name):
+        with open(file_name) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    else:
+        st.error(f"CSS file not found: {file_name}")
+
+# Example usage with the correct path
+include_css("styles.css")  # Adjust this path as needed
+
+# Additional CSS for responsiveness
+st.markdown("""
+    <style>
+    @media screen and (max-width: 768px) {
+        .sensor-box {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .sensor-title {
+            font-size: 1.2em;
+        }
+        .sensor-value {
+            font-size: 1.5em;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
 # Define landing page
 def landing_page():
     st.markdown(
