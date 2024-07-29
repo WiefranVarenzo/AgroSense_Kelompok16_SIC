@@ -1,4 +1,4 @@
-//------Felix Rafael
+//-----Felix Rafel
 #include "DHTesp.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -10,6 +10,7 @@
 #define LDR_PIN 13
 #define PH_PIN 35
 #define MQ135_SENSOR_PIN 34
+#define TDS_SENSOR_PIN 32  // Define TDS sensor pin
 #define LED_PIN 19
 
 // WiFi and MQTT settings
@@ -49,7 +50,7 @@ void setup_wifi() {
   Serial.println("");
   Serial.println("WiFi connected");
 }
-
+//-----Jessica Valencia
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
@@ -62,7 +63,7 @@ void reconnect() {
     }
   }
 }
-//-----Jessica Valencia
+
 void handleLedControl(String payload) {
   if (payload == "ON") {
     digitalWrite(LED_PIN, HIGH);
@@ -81,7 +82,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     handleLedControl(message);
   }
 }
-/
+
 void setup() {
   // Initialize Serial, WiFi, and MQTT
   Serial.begin(115200);
@@ -95,18 +96,19 @@ void setup() {
   pinMode(LDR_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(PH_PIN, INPUT);
+  pinMode(TDS_SENSOR_PIN, INPUT);
 
   Serial.println();
   delay(1000);
 }
-
+//-----Wiefran Varenzo
 void loop() {
   // Reconnect to MQTT if necessary
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
-//-----Wiefran Varenzo
+
   // DHT sensor
   float temperature = dht.getTemperature();
   float humidity = dht.getHumidity();
@@ -139,19 +141,21 @@ void loop() {
   float phValue = -5.70 * voltage + 15.72; // Example calibration formula
   Serial.print("pH = ");
   Serial.println(phValue, 2); // Print with 2 decimal places
-//-----Jessica Theresia
+
   // Air quality sensor
   int sensor_value = analogRead(MQ135_SENSOR_PIN);
-  String air_quality_label = interpret_air_quality(sensor_value/100);
+  String air_quality_label = interpret_air_quality(sensor_value / 100);
   Serial.print("Air Quality Index: ");
   Serial.println(sensor_value / 100);
   Serial.print("Air Quality: ");
   Serial.println(air_quality_label);
-
+//-----Jessica Theresia
   // TDS sensor
-  float tdsValue = random(110, 141); // Random value between 110 and 140
+  int tdsValue = analogRead(TDS_SENSOR_PIN);
+  float tdsVoltage = (tdsValue * 3.3) / 4095.0; // Convert to voltage
+  float tdsPPM = (tdsVoltage * 133.42) / (1 + (tdsVoltage * 1.0094)); // Convert to ppm
   Serial.print("TDS Value: ");
-  Serial.print(tdsValue, 2); // Print with 2 decimal places
+  Serial.print(tdsPPM, 2); // Print with 2 decimal places
   Serial.println(" ppm");
 
   // Publish sensor data to MQTT
@@ -160,7 +164,7 @@ void loop() {
   client.publish(mqtt_topic_light, lightLevel.c_str());
   client.publish(mqtt_topic_ph, String(phValue).c_str());
   client.publish(mqtt_topic_air, air_quality_label.c_str());
-  client.publish(mqtt_topic_tds, String(tdsValue).c_str());
+  client.publish(mqtt_topic_tds, String(tdsPPM).c_str());
 
   delay(2000);
 }
