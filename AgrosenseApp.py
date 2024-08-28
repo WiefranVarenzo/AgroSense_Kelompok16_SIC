@@ -319,58 +319,87 @@ def real_time_sensor_page():
 
     while True:
         with data_placeholder.container():
+            # Define normal ranges
+            abnormal_sensors = []
+
             # Define columns layout
             col1, col2 = st.columns(2)
             with col1:
+                temp = sensor_data.get('temperature', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">Temperature</div>
-                    <div class="sensor-value">{sensor_data.get('temperature', 'N/A')}°C</div>
+                    <div class="sensor-value">{temp}°C</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if temp != 'N/A' and temp != '' and (float(temp) > 32 or float(temp) < 15):
+                    abnormal_sensors.append('Temperature')
+
             with col2:
+                hum = sensor_data.get('humidity', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">Humidity</div>
-                    <div class="sensor-value">{sensor_data.get('humidity', 'N/A')} %</div>
+                    <div class="sensor-value">{hum} %</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if hum != 'N/A' and hum != '' and (float(hum) > 80 or float(hum) < 30):
+                    abnormal_sensors.append('Humidity')
 
             col3, col4 = st.columns(2)
             with col3:
+                air_q = sensor_data.get('airquality', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">Air Quality</div>
-                    <div class="sensor-value">{sensor_data.get('airquality', 'N/A')}</div>
+                    <div class="sensor-value">{air_q}</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if air_q != 'N/A' and air_q == 'poor':
+                    abnormal_sensors.append('Air Quality')
 
             with col4:
+                tds = sensor_data.get('tds', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">Water Quality</div>
-                    <div class="sensor-value">{sensor_data.get('tds', 'N/A')}PPM</div>
+                    <div class="sensor-value">{tds} PPM</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if tds != 'N/A' and tds != '' and (float(tds) < 300 or float(tds) > 1200):
+                    abnormal_sensors.append('Water Quality')
 
-            # Adjust the number of columns and their layout
             col5, col6 = st.columns([1, 1])  # Specify two equal-width columns
             with col5:
+                ph = sensor_data.get('ph', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">pH</div>
-                    <div class="sensor-value">{sensor_data.get('ph', 'N/A')}</div>
+                    <div class="sensor-value">{ph}</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if ph != 'N/A' and ph != '' and (float(ph) < 6.0 or float(ph) > 7.5):
+                    abnormal_sensors.append('pH')
+
             with col6:
+                light = sensor_data.get('light', 'N/A')
                 st.markdown(f"""
                 <div class="sensor-box">
                     <div class="sensor-title">Light</div>
-                    <div class="sensor-value">{sensor_data.get('light', 'N/A')}</div>
+                    <div class="sensor-value">{light}</div>
                 </div>
                 """, unsafe_allow_html=True)
+                if light == 'dark':
+                    abnormal_sensors.append('Light')
+
+            # Check and display abnormal sensors
+            if abnormal_sensors:
+                st.warning(f"Warning: The following sensors have abnormal readings: {', '.join(abnormal_sensors)}")
+            else:
+                st.success("All sensors are within normal ranges.")
 
         time.sleep(1)
+
 
 
 # Main menu implementation
